@@ -16,5 +16,5 @@ public class NewMenuRequest {
 
     @NotNull(message = "price is required")
     @Min(value = 0, message = "price must be greater than or equals to 0")
-    private Float price;
+    private Integer price;
 }

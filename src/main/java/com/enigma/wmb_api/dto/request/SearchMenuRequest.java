@@ -13,6 +13,6 @@ public class SearchMenuRequest {
     private String sortBy;
     private String direction;
     private String name;
-    private Float minPrice;
-    private Float maxPrice;
+    private Integer minPrice;
+    private Integer maxPrice;
 }

@@ -23,7 +23,7 @@ public class MenuController {
     private final MenuService menuService;
 
     @PostMapping
-    public ResponseEntity<CommonResponse<Menu>> createNewProduct(@RequestBody NewMenuRequest request) {
+    public ResponseEntity<CommonResponse<Menu>> createNewMenu(@RequestBody NewMenuRequest request) {
         Menu menu = menuService.create(request);
         CommonResponse<Menu> response = CommonResponse.<Menu>builder()
                 .statusCode(HttpStatus.CREATED.value())
@@ -34,7 +34,7 @@ public class MenuController {
     }
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<CommonResponse<Menu>> getProductById(@PathVariable String id) {
+    public ResponseEntity<CommonResponse<Menu>> getMenuById(@PathVariable String id) {
         Menu menu = menuService.getById(id);
         CommonResponse<Menu> response = CommonResponse.<Menu>builder()
                 .statusCode(HttpStatus.OK.value())
@@ -45,14 +45,14 @@ public class MenuController {
     }
 
     @GetMapping
-    public ResponseEntity<CommonResponse<List<Menu>>> getAllProduct(
+    public ResponseEntity<CommonResponse<List<Menu>>> getAllMenu(
             @RequestParam(name = "page", defaultValue = "1") Integer page,
             @RequestParam(name = "size", defaultValue = "5") Integer size,
             @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
             @RequestParam(name = "direction", defaultValue = "asc") String direction,
             @RequestParam(name = "name", required = false) String name,
-            @RequestParam(name = "minPrice", required = false) Float minPrice,
-            @RequestParam(name = "maxPrice", required = false) Float maxPrice
+            @RequestParam(name = "minPrice", required = false) Integer minPrice,
+            @RequestParam(name = "maxPrice", required = false) Integer maxPrice
     ) {
         SearchMenuRequest request = SearchMenuRequest.builder()
                 .page(page)
@@ -97,7 +97,7 @@ public class MenuController {
     }
 
     @DeleteMapping(path = "/{id}")
-    public ResponseEntity<String> deleteById(@PathVariable String id) {
+    public ResponseEntity<CommonResponse<Menu>> deleteMenuById(@PathVariable String id) {
         Menu menu = menuService.getById(id);
         menuService.delete(id);
         CommonResponse<Menu> response = CommonResponse.<Menu>builder()
@@ -105,7 +105,7 @@ public class MenuController {
                 .message("Menu deleted")
                 .data(menu)
                 .build();
-        return ResponseEntity.ok("Deleted");
+        return ResponseEntity.ok(response);
     }
 
 }

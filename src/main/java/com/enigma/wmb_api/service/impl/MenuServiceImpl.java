@@ -13,7 +13,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -37,6 +39,7 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public Menu getById(String id) {
         Optional<Menu> menu = menuRepository.findById(id);
+        if(menu.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "menu not found");
         return menu.get();
     }
 
