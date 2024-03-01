@@ -19,6 +19,6 @@ public class Menu {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "price", nullable = false)
+    @Column(name = "price", nullable = false, columnDefinition = "FLOAT CHECK (price >= 0)")
     private Float price;
 }

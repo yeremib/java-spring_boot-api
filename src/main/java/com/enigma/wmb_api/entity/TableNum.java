@@ -11,7 +11,7 @@ import lombok.*;
 @Builder
 @Entity
 @Table(name = ConstantTable.MTABLE)
-public class MTable {
+public class TableNum {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
