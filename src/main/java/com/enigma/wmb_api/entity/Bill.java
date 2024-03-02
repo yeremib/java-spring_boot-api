@@ -25,7 +25,7 @@ public class Bill {
 
     @ManyToOne
     @JoinColumn(name = "customer_id")
-    private Customer customer;
+    private User customer;
 
     @ManyToOne
     @JoinColumn(name = "table_id")

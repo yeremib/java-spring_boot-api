@@ -1,6 +1,7 @@
 package com.enigma.wmb_api.controller;
 
 import com.enigma.wmb_api.constant.APIUrl;
+import com.enigma.wmb_api.dto.request.SearchTransTypeRequest;
 import com.enigma.wmb_api.dto.response.CommonResponse;
 import com.enigma.wmb_api.entity.TransType;
 import com.enigma.wmb_api.service.TransTypeService;
@@ -19,10 +20,11 @@ public class TransTypeController {
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<CommonResponse<TransType>> getTransTypeById(@PathVariable String id) {
-        TransType transType = transTypeService.getById(id);
+        TransType transType =  transTypeService.getById(id);
+
         CommonResponse<TransType> response = CommonResponse.<TransType>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("transaction type found")
+                .message("Transaction Type Found")
                 .data(transType)
                 .build();
 
@@ -33,7 +35,9 @@ public class TransTypeController {
     public ResponseEntity<CommonResponse<List<TransType>>> getAllTransType(
             @RequestParam(name = "description", required = false) String description
     ){
-        List<TransType> allTransType = transTypeService.getAll();
+
+        SearchTransTypeRequest request = SearchTransTypeRequest.builder().description(description).build();
+        List<TransType> allTransType = transTypeService.getAll(request);
         CommonResponse<List<TransType>> response = CommonResponse.<List<TransType>>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("successfully get all transaction type")
@@ -45,7 +49,7 @@ public class TransTypeController {
 
     @PutMapping
     public ResponseEntity<CommonResponse<TransType>> updateTransType(@RequestBody TransType transType){
-        TransType transType1 = transTypeService.getById(transType.getId().name());
+        TransType transType1 = transTypeService.update(transType);
         CommonResponse<TransType> response = CommonResponse.<TransType>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("successfully update transaction type")

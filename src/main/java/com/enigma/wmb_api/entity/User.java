@@ -11,7 +11,7 @@ import lombok.*;
 @Builder
 @Entity
 @Table(name = ConstantTable.CUSTOMER)
-public class Customer {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;

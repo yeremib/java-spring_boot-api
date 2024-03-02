@@ -1,6 +1,5 @@
 package com.enigma.wmb_api.entity;
 
-import com.enigma.wmb_api.constant.ConstantTable;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,12 +9,15 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = ConstantTable.MTABLE)
-public class TableNum {
+@Table(name = "m_user_credential")
+public class UserCredential {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
+
+    @Column(name = "password", nullable = false)
+    private String password;
 }
