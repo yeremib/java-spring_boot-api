@@ -1,11 +1,16 @@
 package com.enigma.wmb_api.service;
 
+import com.enigma.wmb_api.dto.request.NewBillRequest;
+import com.enigma.wmb_api.dto.request.SearchBillReq;
+import com.enigma.wmb_api.dto.response.BillResponse;
 import com.enigma.wmb_api.entity.Bill;
-import com.enigma.wmb_api.repository.BillRepository;
+import org.springframework.data.domain.Page;
+
+import java.util.List;
+
 
 public interface BillService {
-    BillResponse create(NewBillReq req);
+    BillResponse create(NewBillRequest req);
     BillResponse getBillById(String id);
-    Page<BillResponse> getAll(SearchBillReq req);
-    Bill update(Bill bill);
+    List<BillResponse> getAll();
 }
