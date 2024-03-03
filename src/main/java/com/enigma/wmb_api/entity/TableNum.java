@@ -10,12 +10,12 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = ConstantTable.MTABLE)
+@Table(name = ConstantTable.TABLENUM)
 public class TableNum {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, unique = true)
     private String name;
 }

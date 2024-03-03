@@ -21,12 +21,12 @@ public class BillDetail {
     private Bill bill;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "menu_id", nullable = false)
     private Menu menu;
 
     @Column(name = "qty", nullable = false)
     private Integer qty;
 
-    @Column(name = "price", nullable = false)
+    @Column(name = "price", nullable = false, updatable = false)
     private Integer price;
 }

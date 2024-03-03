@@ -24,8 +24,8 @@ public class Bill {
     private Date transDate;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private User customer;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "table_id")
