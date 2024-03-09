@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
@@ -25,17 +26,14 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ValidationUtil validationUtil;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public User create(NewUserRequest request) {
-        validationUtil.validate(request);
-        User user = User.builder()
-                .name(request.getName())
-                .phoneNumber(request.getPhoneNumber())
-                .status(request.getStatus())
-                .build();
+    public User create(User user) {
+        validationUtil.validate(user);
         return userRepository.saveAndFlush(user);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public User getById(String id) {
         Optional<User> user = userRepository.findById(id);
@@ -43,6 +41,7 @@ public class UserServiceImpl implements UserService {
         return user.get();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<User> getAll(SearchUserRequest request) {
         if(request.getPage() <= 0) request.setPage(1);
@@ -52,12 +51,14 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll(specification, pageable);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public User update(User user) {
         getById(user.getId());
         return userRepository.saveAndFlush(user);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void delete(String id) {
         User currUser = getById(id);

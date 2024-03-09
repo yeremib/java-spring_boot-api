@@ -69,7 +69,7 @@ public class MenuController {
         PagingResponse pagingResponse = PagingResponse.builder()
                 .totalPages(menus.getTotalPages())
                 .totalElement(menus.getTotalElements())
-                .page(menus.getPageable().getPageNumber())
+                .page(menus.getPageable().getPageNumber() + 1)
                 .size(menus.getPageable().getPageSize())
                 .hasNext(menus.hasNext())
                 .hasPrevious(menus.hasPrevious())

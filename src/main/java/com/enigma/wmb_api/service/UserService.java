@@ -6,7 +6,7 @@ import com.enigma.wmb_api.entity.User;
 import org.springframework.data.domain.Page;
 
 public interface UserService {
-    User create(NewUserRequest request);
+    User create(User user);
     User getById(String id);
     Page<User> getAll(SearchUserRequest request);
     User update(User user);

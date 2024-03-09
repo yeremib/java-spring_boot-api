@@ -10,7 +10,7 @@ import java.util.List;
 
 
 public interface BillService {
-    BillResponse create(NewBillRequest req);
-    BillResponse getBillById(String id);
-    List<BillResponse> getAll();
+    Bill create(NewBillRequest req);
+    Bill getBillById(String id);
+    Page<Bill> getAll(SearchBillReq req);
 }

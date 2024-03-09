@@ -1,18 +1,26 @@
 package com.enigma.wmb_api.service.impl;
 
-import com.enigma.wmb_api.constant.TransactionType;
+
 import com.enigma.wmb_api.dto.request.NewBillRequest;
-import com.enigma.wmb_api.dto.response.BillDetailResponse;
-import com.enigma.wmb_api.dto.response.BillResponse;
+import com.enigma.wmb_api.dto.request.SearchBillReq;
 import com.enigma.wmb_api.entity.*;
 import com.enigma.wmb_api.repository.BillRepository;
 import com.enigma.wmb_api.service.*;
+import com.enigma.wmb_api.specification.BillSpesification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,12 +34,12 @@ public class BillServiceImpl implements BillService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public BillResponse create(NewBillRequest req) {
+    public Bill create(NewBillRequest req) {
         Bill bill;
-        BillResponse response;
 
         User user = userService.getById(req.getUserId());
         TransType transType = transTypeService.getById(req.getTransType());
+        TableNum tableNum = tableNumService.getById(req.getTableId());
 
         if (transType.getId().name().equals("TA")) {
             bill = Bill.builder()
@@ -39,17 +47,16 @@ public class BillServiceImpl implements BillService {
                     .transType(transType)
                     .transDate(new Date())
                     .build();
-            billRepository.saveAndFlush(bill);
         } else {
-            TableNum tableNum = tableNumService.getById(req.getTableId());
             bill = Bill.builder()
                     .user(user)
                     .tableNum(tableNum)
                     .transType(transType)
                     .transDate(new Date())
                     .build();
-            billRepository.saveAndFlush(bill);
         }
+
+        billRepository.saveAndFlush(bill);
 
         List<BillDetail> billDetails = req.getBillDetails().stream().map(billDetailReq -> {
             Menu menu = menuService.getById(billDetailReq.getMenuId());
@@ -57,81 +64,31 @@ public class BillServiceImpl implements BillService {
                     .bill(bill)
                     .menu(menu)
                     .qty(billDetailReq.getQty())
-                    .price(billDetailReq.getPrice())
+                    .price(menu.getPrice())
                     .build();
         }).toList();
 
         billDetailService.createBulk(billDetails);
         bill.setBillDetails(billDetails);
 
-        List<BillDetailResponse> billDetailResponses = billDetails.stream().map(billDetail -> {
-            return BillDetailResponse.builder()
-                    .id(billDetail.getId())
-                    .menuId(billDetail.getMenu().getId())
-                    .qty(billDetail.getQty())
-                    .price(billDetail.getPrice())
-                    .build();
-        }).toList();
-
-        if(transType.getId().name().equals("TA")) {
-            response = BillResponse.builder()
-                    .id(bill.getId())
-                    .userId(bill.getUser().getId())
-                    .transType(bill.getTransType().getId())
-                    .transDate(bill.getTransDate())
-                    .billDetails(billDetailResponses)
-                    .build();
-        } else {
-            response = BillResponse.builder()
-                    .id(bill.getId())
-                    .userId(bill.getUser().getId())
-                    .tableId(bill.getTableNum().getId())
-                    .transType(bill.getTransType().getId())
-                    .transDate(bill.getTransDate())
-                    .billDetails(billDetailResponses)
-                    .build();
-        }
-
-        return response;
+        return bill;
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public BillResponse getBillById(String id) {
-        return null;
+    public Bill getBillById(String id) {
+        Optional<Bill> bill = billRepository.findById(id);
+        if(bill.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "bill not found");
+        return bill.get();
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public List<BillResponse> getAll() {
-        List<Bill> bills = billRepository.findAll();
-
-        return bills.stream().map(bill -> {
-            List<BillDetailResponse> billDetailResponses = bill.getBillDetails().stream().map(billDetail -> {
-                return BillDetailResponse.builder()
-                        .id(billDetail.getId())
-                        .menuId(billDetail.getMenu().getId())
-                        .qty(billDetail.getQty())
-                        .price(billDetail.getPrice())
-                        .build();
-            }).toList();
-
-            if(bill.getTransType().getId().equals(TransactionType.TA)) {
-                return BillResponse.builder()
-                        .id(bill.getId())
-                        .transDate(bill.getTransDate())
-                        .userId(bill.getUser().getId())
-                        .transType(bill.getTransType().getId())
-                        .billDetails(billDetailResponses)
-                        .build();
-            } else {
-                return BillResponse.builder()
-                        .id(bill.getId())
-                        .transDate(bill.getTransDate())
-                        .userId(bill.getUser().getId())
-                        .tableId(bill.getTableNum().getId())
-                        .transType(bill.getTransType().getId())
-                        .billDetails(billDetailResponses)
-                        .build();
-            }
-        }).toList();
+    public Page<Bill> getAll(SearchBillReq req) {
+        if (req.getPage() <= 0) req.setPage(1);
+        Sort sort = Sort.by(Sort.Direction.fromString(req.getDirection()), req.getSortBy());
+        Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize(), sort);
+        Specification<Bill> specification = BillSpesification.getSpesification(req);
+        return billRepository.findAll(specification, pageable);
     }
 }

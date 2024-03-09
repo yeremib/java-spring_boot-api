@@ -1,5 +1,6 @@
 package com.enigma.wmb_api.dto.request;
 
+import com.enigma.wmb_api.entity.UserCredential;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -15,4 +16,5 @@ public class NewUserRequest {
     private String phoneNumber;
 
     private Boolean status;
+    private UserCredential userCredential;
 }

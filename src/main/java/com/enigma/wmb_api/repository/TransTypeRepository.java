@@ -8,3 +8,4 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface TransTypeRepository extends JpaRepository<TransType, TransactionType>, JpaSpecificationExecutor<TransType> {
 }
+

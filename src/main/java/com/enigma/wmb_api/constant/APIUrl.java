@@ -6,5 +6,6 @@ public class APIUrl {
     public static final String TABLE_NUM_API = "/api/tables";
     public static final String TRANS_TYPE_API = "/api/transtypes";
     public static final String BILL_API = "/api/bills";
-    public static final String BILL_DETAIL_API = "/api/billdetails";
+    public static final String AUTH_API = "/api/auth";
+
 }

@@ -25,7 +25,7 @@ public class User {
     @Column(name = "status", nullable = false)
     private Boolean status;
 
-//    @OneToOne
-//    @JoinColumn(name = "user_credential_id", nullable = false)
-//    private UserCredential userCredential;
+    @OneToOne
+    @JoinColumn(name = "user_credential_id", nullable = false)
+    private UserCredential userCredential;
 }

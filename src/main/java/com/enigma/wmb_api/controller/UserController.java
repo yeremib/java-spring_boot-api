@@ -22,12 +22,12 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<CommonResponse<User>> createNewUser(@RequestBody NewUserRequest request) {
-        User user = userService.create(request);
+    public ResponseEntity<CommonResponse<User>> createNewUser(@RequestBody User user) {
+        User newUser = userService.create(user);
         CommonResponse<User> response = CommonResponse.<User>builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message("successfully create new user")
-                .data(user)
+                .data(newUser)
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

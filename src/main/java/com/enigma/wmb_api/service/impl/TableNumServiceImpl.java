@@ -8,6 +8,7 @@ import com.enigma.wmb_api.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class TableNumServiceImpl implements TableNumService {
     private  final TableNumRepository tableNumRepository;
     private final ValidationUtil validationUtil;
 
-
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public TableNum create(NewTableNumReq req) {
         validationUtil.validate(req);
@@ -29,6 +30,7 @@ public class TableNumServiceImpl implements TableNumService {
         return tableNumRepository.saveAndFlush(tableNum);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public TableNum getById(String id) {
         Optional<TableNum> tableNum = tableNumRepository.findById(id);
@@ -36,18 +38,21 @@ public class TableNumServiceImpl implements TableNumService {
         return tableNum.get();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<TableNum> getAll(String name) {
         if(name != null) return tableNumRepository.findAllByNameIgnoreCaseLike("%"+name+"%");
         return tableNumRepository.findAll();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public TableNum update(TableNum tableNum) {
         getById(tableNum.getId());
         return tableNumRepository.saveAndFlush(tableNum);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void delete(String id) {
         TableNum currTableNum = getById(id);
