@@ -11,6 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class JwtClaims {
-    private String email;
-    private List<Role> roles;
+    private String userCredentialId;
+    private List<String> roles;
 }

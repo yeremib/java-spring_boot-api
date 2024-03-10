@@ -5,6 +5,6 @@ import com.enigma.wmb_api.entity.UserCredential;
 
 public interface JwtService {
     String generateToken(UserCredential userCredential);
-    boolean verifyJwtToken(String token);
-    JwtClaims getClaimsByToken(String token);
+    boolean verifyJwtToken(String bearerToken);
+    JwtClaims getClaimsByToken(String bearerToken);
 }

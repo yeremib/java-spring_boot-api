@@ -9,12 +9,17 @@ import com.enigma.wmb_api.entity.User;
 import com.enigma.wmb_api.entity.UserCredential;
 import com.enigma.wmb_api.repository.UserCredentialRepository;
 import com.enigma.wmb_api.service.AuthService;
+import com.enigma.wmb_api.service.JwtService;
 import com.enigma.wmb_api.service.RoleService;
 import com.enigma.wmb_api.service.UserService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +35,8 @@ public class AuthServiceImpl implements AuthService {
     private final RoleService roleService;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
     @Value("${wmb_api.email.superadmin}")
     private String superAdminEmail;
@@ -49,7 +56,7 @@ public class AuthServiceImpl implements AuthService {
 
         UserCredential userSuperAdmin = UserCredential.builder()
                 .email(superAdminEmail)
-                .password(superAdminPassword)
+                .password(passwordEncoder.encode(superAdminPassword))
                 .roles(List.of(superAdmin, admin, customer))
                 .isEnable(true)
                 .build();
@@ -97,6 +104,7 @@ public class AuthServiceImpl implements AuthService {
                 .email(request.getEmail())
                 .password(hashPassword)
                 .roles(List.of(role))
+                .isEnable(true)
                 .build();
 
         userCredentialRepository.saveAndFlush(newUserCredential);
@@ -120,6 +128,18 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(AuthRequest request) {
-        return null;
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                request.getEmail(),
+                request.getPassword()
+        );
+        Authentication authenticate = authenticationManager.authenticate(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
+        UserCredential userCredential = (UserCredential) authenticate.getPrincipal();
+        String token = jwtService.generateToken(userCredential);
+        return LoginResponse.builder()
+                .email(userCredential.getEmail())
+                .roles(userCredential.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                .token(token)
+                .build();
     }
 }
