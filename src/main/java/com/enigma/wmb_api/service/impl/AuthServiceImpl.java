@@ -101,8 +101,9 @@ public class AuthServiceImpl implements AuthService {
 
         userCredentialRepository.saveAndFlush(newUserCredential);
 
+        String[] name = request.getEmail().split("@", 2);
         User newUser = User.builder()
-                .name(request.getName())
+                .name(name[0])
                 .status(true)
                 .userCredential(newUserCredential)
                 .build();
