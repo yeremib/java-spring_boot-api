@@ -1,5 +1,6 @@
 package com.enigma.wmb_api.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -34,7 +35,6 @@ public class UserCredential implements UserDetails {
     private List<Role> roles;
 
 
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream().map(role -> new SimpleGrantedAuthority(role.getRole().name())).toList();
@@ -42,7 +42,7 @@ public class UserCredential implements UserDetails {
 
     @Override
     public String getUsername() {
-        return null;
+        return email;
     }
 
     @Override

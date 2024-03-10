@@ -8,6 +8,7 @@ import com.enigma.wmb_api.service.TableNumService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.List;
 @RequestMapping(path = APIUrl.TABLE_NUM_API)
 public class TableNumController {
     private final TableNumService tableNumService;
-
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @PostMapping
     public ResponseEntity<CommonResponse<TableNum>> createNewTableNum(@RequestBody NewTableNumReq req) {
         TableNum tableNum = tableNumService.create(req);
@@ -53,6 +54,7 @@ public class TableNumController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @PutMapping
     public ResponseEntity<CommonResponse<TableNum>> updateTableNum(@RequestBody TableNum tableNum) {
         TableNum tableNum1 = tableNumService.update(tableNum);
@@ -64,6 +66,7 @@ public class TableNumController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @DeleteMapping(path = "/{id}")
     public ResponseEntity<CommonResponse<TableNum>> deleteTableNumById(@PathVariable String id) {
         TableNum tableNum = tableNumService.getById(id);

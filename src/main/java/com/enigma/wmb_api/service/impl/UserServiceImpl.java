@@ -2,6 +2,8 @@ package com.enigma.wmb_api.service.impl;
 
 import com.enigma.wmb_api.dto.request.NewUserRequest;
 import com.enigma.wmb_api.dto.request.SearchUserRequest;
+import com.enigma.wmb_api.dto.request.UpdateUserRequest;
+import com.enigma.wmb_api.dto.response.UserResponse;
 import com.enigma.wmb_api.entity.User;
 import com.enigma.wmb_api.repository.UserRepository;
 import com.enigma.wmb_api.service.UserService;
@@ -53,9 +55,12 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public User update(User user) {
-        getById(user.getId());
-        return userRepository.saveAndFlush(user);
+    public UserResponse update(UpdateUserRequest request) {
+        User currentUser = getById(request.getId());
+        currentUser.setName(request.getName());
+        currentUser.setPhoneNumber(request.getPhoneNumber());
+        userRepository.saveAndFlush(currentUser);
+        return convertUserToUserResponse(currentUser);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -63,5 +68,15 @@ public class UserServiceImpl implements UserService {
     public void delete(String id) {
         User currUser = getById(id);
         userRepository.delete(currUser);
+    }
+
+    private UserResponse convertUserToUserResponse(User user) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .phoneNumber(user.getPhoneNumber())
+                .status(user.getStatus())
+                .userCredentialId(user.getUserCredential().getId())
+                .build();
     }
 }

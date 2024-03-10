@@ -26,7 +26,6 @@ public class UserCredentialServiceImpl implements UserCredentialService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
     }
 
-    @Transactional(readOnly = true)
     @Override
     public UserCredential getByContext() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.List;
 @RequestMapping(path = APIUrl.BILL_API)
 public class BillController {
     private final BillService billService;
+
 
     @PostMapping
     public ResponseEntity<CommonResponse<Bill>> createNewBill(@RequestBody NewBillRequest billRequest) {
@@ -34,6 +36,7 @@ public class BillController {
        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN') OR #id == @userCredentialServiceImpl.getByUserId()")
     @GetMapping("/{id}")
     public ResponseEntity<CommonResponse<Bill>> getBillById(@PathVariable String id) {
         Bill bill = billService.getBillById(id);
@@ -47,6 +50,7 @@ public class BillController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @GetMapping
     public ResponseEntity<CommonResponse<List<Bill>>> getAllBill(
             @RequestParam(name = "page", defaultValue = "1") Integer page,

@@ -1,16 +1,19 @@
 package com.enigma.wmb_api.controller;
 
 import com.enigma.wmb_api.constant.APIUrl;
-import com.enigma.wmb_api.dto.request.NewUserRequest;
 import com.enigma.wmb_api.dto.request.SearchUserRequest;
+import com.enigma.wmb_api.dto.request.UpdateUserRequest;
 import com.enigma.wmb_api.dto.response.CommonResponse;
 import com.enigma.wmb_api.dto.response.PagingResponse;
+import com.enigma.wmb_api.dto.response.UserResponse;
 import com.enigma.wmb_api.entity.User;
 import com.enigma.wmb_api.service.UserService;
+import com.enigma.wmb_api.service.impl.AuthenticateUserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +23,7 @@ import java.util.List;
 @RequestMapping(path = APIUrl.USER_API)
 public class UserController {
     private final UserService userService;
+    private final AuthenticateUserServiceImpl authenticateUserService;
 
     @PostMapping
     public ResponseEntity<CommonResponse<User>> createNewUser(@RequestBody User user) {
@@ -32,6 +36,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+
     @GetMapping(path = "/{id}")
     public ResponseEntity<CommonResponse<User>> getUserById(@PathVariable String id) {
         User user = userService.getById(id);
@@ -43,6 +48,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @GetMapping
     public ResponseEntity<CommonResponse<List<User>>> getAllUser(
             @RequestParam(name = "page", defaultValue = "1") Integer page,
@@ -82,16 +88,18 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN') OR @authenticateUserServiceImpl.hasSameId(#request)")
     @PutMapping
-    public ResponseEntity<CommonResponse<User>> updateUser(@RequestBody User user) {
-        User user1 = userService.update(user);
-        CommonResponse<User> response = CommonResponse.<User>builder()
+    public ResponseEntity<CommonResponse<UserResponse>> updateUser(@RequestBody UpdateUserRequest request) {
+        UserResponse user1 = userService.update(request);
+        CommonResponse<UserResponse> response = CommonResponse.<UserResponse>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("user updated")
                 .data(user1)
                 .build();
         return ResponseEntity.ok(response);
     }
+
 
     @DeleteMapping(path = "/{id}")
     public ResponseEntity<CommonResponse<User>> deleteUser(@PathVariable String id) {
