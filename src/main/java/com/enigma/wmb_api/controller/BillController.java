@@ -3,6 +3,8 @@ package com.enigma.wmb_api.controller;
 import com.enigma.wmb_api.constant.APIUrl;
 import com.enigma.wmb_api.dto.request.NewBillRequest;
 import com.enigma.wmb_api.dto.request.SearchBillReq;
+import com.enigma.wmb_api.dto.request.UpdateTransactionStatusRequest;
+import com.enigma.wmb_api.dto.response.BillResponse;
 import com.enigma.wmb_api.dto.response.CommonResponse;
 import com.enigma.wmb_api.dto.response.PagingResponse;
 import com.enigma.wmb_api.entity.Bill;
@@ -10,11 +12,13 @@ import com.enigma.wmb_api.service.BillService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,11 +27,14 @@ public class BillController {
     private final BillService billService;
 
 
-    @PostMapping
-    public ResponseEntity<CommonResponse<Bill>> createNewBill(@RequestBody NewBillRequest billRequest) {
-       Bill bill = billService.create(billRequest);
+    @PostMapping(
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<CommonResponse<BillResponse>> createNewBill(@RequestBody NewBillRequest billRequest) {
+       BillResponse bill = billService.create(billRequest);
 
-       CommonResponse<Bill> response = CommonResponse.<Bill>builder()
+       CommonResponse<BillResponse> response = CommonResponse.<BillResponse>builder()
                .statusCode(HttpStatus.CREATED.value())
                .message("successfully create new bill")
                .data(bill)
@@ -36,7 +43,7 @@ public class BillController {
        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN') OR #id == @userCredentialServiceImpl.getByUserId()")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<CommonResponse<Bill>> getBillById(@PathVariable String id) {
         Bill bill = billService.getBillById(id);
@@ -51,10 +58,10 @@ public class BillController {
     }
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
-    @GetMapping
-    public ResponseEntity<CommonResponse<List<Bill>>> getAllBill(
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CommonResponse<List<BillResponse>>> getAllBill(
             @RequestParam(name = "page", defaultValue = "1") Integer page,
-            @RequestParam(name = "size", defaultValue = "2") Integer size,
+            @RequestParam(name = "size", defaultValue = "10") Integer size,
             @RequestParam(name = "sortBy", defaultValue = "transDate") String sortBy,
             @RequestParam(name = "direction", defaultValue = "asc") String direction,
             @RequestParam(name = "transType", required = false) String transType,
@@ -71,7 +78,7 @@ public class BillController {
                 .beforeDate(beforeDate)
                 .build();
 
-        Page<Bill> bills = billService.getAll(req);
+        Page<BillResponse> bills = billService.getAll(req);
 
         PagingResponse pagingResponse = PagingResponse.builder()
                 .totalPages(bills.getTotalPages())
@@ -82,7 +89,7 @@ public class BillController {
                 .hasPrevious(bills.hasPrevious())
                 .build();
 
-        CommonResponse<List<Bill>> response = CommonResponse.<List<Bill>> builder()
+        CommonResponse<List<BillResponse>> response = CommonResponse.<List<BillResponse>> builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("successfully get all menu")
                 .data(bills.getContent())
@@ -90,5 +97,18 @@ public class BillController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/status")
+    public ResponseEntity<CommonResponse<?>> updateStatus(@RequestBody Map<String, Object> request) {
+        UpdateTransactionStatusRequest updateTransactionStatusRequest = UpdateTransactionStatusRequest.builder()
+                .orderId(request.get("order_id").toString())
+                .transactionStatus(request.get("transaction_status").toString())
+                .build();
+        billService.updateStatus(updateTransactionStatusRequest);
+        return ResponseEntity.ok(CommonResponse.builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("successfully update transaction status")
+                .build());
     }
 }

@@ -34,7 +34,7 @@ public class SecurityConfiguration {
                 .sessionManagement(cfg -> cfg.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> req.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/transactions/status").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/bills/status").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

@@ -19,5 +19,6 @@ public class BillResponse {
     private String tableId;
     private TransactionType transType;
     private List<BillDetailResponse>  billDetails;
+    private PaymentResponse paymentResponse;
     private PagingResponse pagingResponse;
 }

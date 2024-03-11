@@ -40,4 +40,8 @@ public class Bill {
     @OneToMany(mappedBy = "bill")
     @JsonManagedReference
     private List<BillDetail> billDetails;
+
+    @OneToOne
+    @JoinColumn(name = "payment_id", unique = true)
+    private Payment payment;
 }

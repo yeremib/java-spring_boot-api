@@ -3,6 +3,10 @@ package com.enigma.wmb_api.service.impl;
 
 import com.enigma.wmb_api.dto.request.NewBillRequest;
 import com.enigma.wmb_api.dto.request.SearchBillReq;
+import com.enigma.wmb_api.dto.request.UpdateTransactionStatusRequest;
+import com.enigma.wmb_api.dto.response.BillDetailResponse;
+import com.enigma.wmb_api.dto.response.BillResponse;
+import com.enigma.wmb_api.dto.response.PaymentResponse;
 import com.enigma.wmb_api.entity.*;
 import com.enigma.wmb_api.repository.BillRepository;
 import com.enigma.wmb_api.service.*;
@@ -31,10 +35,11 @@ public class BillServiceImpl implements BillService {
     private final TableNumService tableNumService;
     private final TransTypeService transTypeService;
     private final MenuService menuService;
+    private final PaymentService paymentService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Bill create(NewBillRequest req) {
+    public BillResponse create(NewBillRequest req) {
         Bill bill;
 
         User user = userService.getById(req.getUserId());
@@ -71,7 +76,33 @@ public class BillServiceImpl implements BillService {
         billDetailService.createBulk(billDetails);
         bill.setBillDetails(billDetails);
 
-        return bill;
+        List<BillDetailResponse> billDetailResponses = billDetails.stream().map(billDetail ->
+                BillDetailResponse.builder()
+                        .id(billDetail.getId())
+                        .menuId(billDetail.getMenu().getId())
+                        .price(billDetail.getPrice())
+                        .qty(billDetail.getQty())
+                        .build()).toList();
+
+        Payment payment = paymentService.createPayment(bill);
+        bill.setPayment(payment);
+
+        PaymentResponse paymentResponse = PaymentResponse.builder()
+                .id(payment.getId())
+                .token(payment.getToken())
+                .redirectUrl(payment.getRedirectUrl())
+                .transactionStatus(payment.getTransactionStatus())
+                .build();
+
+        return BillResponse.builder()
+                .id(bill.getId())
+                .userId(bill.getUser().getId())
+                .transDate(bill.getTransDate())
+                .tableId(bill.getTableNum().getId())
+                .transType(bill.getTransType().getId())
+                .billDetails(billDetailResponses)
+                .paymentResponse(paymentResponse)
+                .build();
     }
 
     @Transactional(readOnly = true)
@@ -84,11 +115,42 @@ public class BillServiceImpl implements BillService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<Bill> getAll(SearchBillReq req) {
+    public Page<BillResponse> getAll(SearchBillReq req) {
         if (req.getPage() <= 0) req.setPage(1);
         Sort sort = Sort.by(Sort.Direction.fromString(req.getDirection()), req.getSortBy());
         Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize(), sort);
         Specification<Bill> specification = BillSpesification.getSpesification(req);
-        return billRepository.findAll(specification, pageable);
+        Page<Bill> bills =  billRepository.findAll(specification, pageable);
+
+        return bills.map(bill -> {
+            List<BillDetailResponse> billDetailResponses = bill.getBillDetails().stream().map(billDetail ->
+                    BillDetailResponse.builder()
+                            .id(billDetail.getId())
+                            .menuId(billDetail.getMenu().getId())
+                            .price(billDetail.getPrice())
+                            .qty(billDetail.getQty())
+                            .build()).toList();
+
+            PaymentResponse paymentResponse = PaymentResponse.builder()
+                    .id(bill.getPayment().getId())
+                    .transactionStatus(bill.getPayment().getTransactionStatus())
+                    .build();
+
+            return BillResponse.builder()
+                    .id(bill.getId())
+                    .userId(bill.getUser().getId())
+                    .billDetails(billDetailResponses)
+                    .paymentResponse(paymentResponse)
+                    .build();
+        });
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void updateStatus(UpdateTransactionStatusRequest request) {
+        Bill bill = billRepository.findById(request.getOrderId()).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "bill not found"));
+        Payment payment = bill.getPayment();
+        payment.setTransactionStatus(request.getTransactionStatus());
     }
 }
