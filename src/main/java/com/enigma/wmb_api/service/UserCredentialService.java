@@ -6,5 +6,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 public interface UserCredentialService extends UserDetailsService {
     UserCredential getByUserId(String id);
     UserCredential getByContext();
+    void deleteById(String id);
 
 }

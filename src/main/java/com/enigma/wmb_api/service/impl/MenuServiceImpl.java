@@ -39,13 +39,16 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public MenuResponse create(NewMenuRequest request) {
         validationUtil.validate(request);
-        if (request.getImage().isEmpty()) throw new ConstraintViolationException("image is required", null);
-        Image image = imageService.create(request.getImage());
+        //if (request.getImage().isEmpty()) throw new ConstraintViolationException("image is required", null);
+
         Menu menu = Menu.builder()
                 .name(request.getName())
                 .price(request.getPrice())
-                .image(image)
                 .build();
+
+        if (request.getImage()!= null) {
+            menu.setImage(imageService.create(request.getImage()));
+        }
 
         menuRepository.saveAndFlush(menu);
         return convertMenuToMenuResponse(menu);
@@ -76,19 +79,20 @@ public class MenuServiceImpl implements MenuService {
         return menuRepository.findAll(specification, pageable).map(this::convertMenuToMenuResponse);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public MenuResponse updateMenu(UpdateMenuRequest request) {
         Menu currentMenu = findByIdOrThrowNotFound(request.getId());
+        Image oldImage = currentMenu.getImage();
         currentMenu.setName(request.getName());
         currentMenu.setPrice(request.getPrice());
 
-        if (request.getImageFile() == null) {
-            currentMenu.setImage(currentMenu.getImage());
-        } else {
-            String imageId = currentMenu.getImage().getId();
+        if (request.getImageFile()!=null){
             Image image = imageService.create(request.getImageFile());
             currentMenu.setImage(image);
-            imageService.deleteById(imageId);
+            if (oldImage != null) {
+                imageService.deleteById(oldImage.getId());
+            }
         }
 
         menuRepository.saveAndFlush(currentMenu);
@@ -115,14 +119,22 @@ public class MenuServiceImpl implements MenuService {
     }
 
     private MenuResponse convertMenuToMenuResponse(Menu menu) {
+        Image image = null;
+        ImageResponse imageResponse = null;
+
+        if (menu.getImage() != null) {
+            image = menu.getImage();
+            imageResponse = ImageResponse.builder()
+                    .url(APIUrl.PRODUCT_IMAGE_DOWNLOAD_API + image.getId())
+                    .name(image.getName())
+                .build();
+        }
+
         return MenuResponse.builder()
                 .id(menu.getId())
                 .name(menu.getName())
                 .price(menu.getPrice())
-                .image(ImageResponse.builder()
-                        .url(APIUrl.PRODUCT_IMAGE_DOWNLOAD_API + menu.getImage().getId())
-                        .name(menu.getImage().getName())
-                        .build())
+                .image(imageResponse)
                 .build();
     }
 

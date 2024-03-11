@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,7 +18,9 @@ public class ImageController {
 
     private final ImageService imageService;
 
-    @PostMapping(path = "/api/upload")
+    @PostMapping(path = "/api/upload",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> uploadImage(@RequestPart(name = "image")MultipartFile multipartFile) {
         Image image = imageService.create(multipartFile);
         return ResponseEntity.status(HttpStatus.CREATED).body(image);

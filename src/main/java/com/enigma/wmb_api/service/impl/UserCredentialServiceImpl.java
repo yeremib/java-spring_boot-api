@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserCredentialServiceImpl implements UserCredentialService {
@@ -31,6 +33,13 @@ public class UserCredentialServiceImpl implements UserCredentialService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return userCredentialRepository.findByEmail(authentication.getPrincipal().toString())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
+    }
+
+    @Override
+    public void deleteById(String id) {
+        Optional<UserCredential> userCredential = userCredentialRepository.findById(id);
+        if (userCredential.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found");
+        userCredentialRepository.deleteById(id);
     }
 
     @Transactional(readOnly = true)

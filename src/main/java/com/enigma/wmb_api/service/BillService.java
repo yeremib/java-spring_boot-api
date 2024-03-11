@@ -14,6 +14,7 @@ public interface BillService {
     BillResponse create(NewBillRequest req);
     Bill getBillById(String id);
     Page<BillResponse> getAll(SearchBillReq req);
+    List<Bill> getAllBill();
 
     void updateStatus(UpdateTransactionStatusRequest request);
 }

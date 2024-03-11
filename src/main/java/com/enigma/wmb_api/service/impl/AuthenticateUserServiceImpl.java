@@ -17,7 +17,7 @@ public class AuthenticateUserServiceImpl {
     private final UserCredentialService userCredentialService;
 
     public boolean hasSameId(UpdateUserRequest request){
-        User currentUser = userService.getById(request.getId());
+        User currentUser = userService.getOneById(request.getId());
         UserCredential userCredential = userCredentialService.getByContext();
         if(!userCredential.getId().equals(currentUser.getUserCredential().getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "not permitted");

@@ -25,22 +25,11 @@ public class UserController {
     private final UserService userService;
     private final AuthenticateUserServiceImpl authenticateUserService;
 
-    @PostMapping
-    public ResponseEntity<CommonResponse<User>> createNewUser(@RequestBody User user) {
-        User newUser = userService.create(user);
-        CommonResponse<User> response = CommonResponse.<User>builder()
-                .statusCode(HttpStatus.CREATED.value())
-                .message("successfully create new user")
-                .data(newUser)
-                .build();
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<CommonResponse<User>> getUserById(@PathVariable String id) {
-        User user = userService.getById(id);
-        CommonResponse<User> response = CommonResponse.<User>builder()
+    public ResponseEntity<CommonResponse<UserResponse>> getUserById(@PathVariable String id) {
+        UserResponse user = userService.getById(id);
+        CommonResponse<UserResponse> response = CommonResponse.<UserResponse>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("user found")
                 .data(user)
@@ -50,7 +39,7 @@ public class UserController {
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @GetMapping
-    public ResponseEntity<CommonResponse<List<User>>> getAllUser(
+    public ResponseEntity<CommonResponse<List<UserResponse>>> getAllUser(
             @RequestParam(name = "page", defaultValue = "1") Integer page,
             @RequestParam(name = "size", defaultValue = "5") Integer size,
             @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
@@ -67,7 +56,7 @@ public class UserController {
                 .phoneNumber(phoneNumber)
                 .build();
 
-        Page<User> users = userService.getAll(searchUserRequest);
+        Page<UserResponse> users = userService.getAll(searchUserRequest);
 
         PagingResponse pagingResponse = PagingResponse.builder()
                 .totalPages(users.getTotalPages())
@@ -78,7 +67,7 @@ public class UserController {
                 .hasPrevious(users.hasPrevious())
                 .build();
 
-        CommonResponse<List<User>> response = CommonResponse.<List<User>>builder()
+        CommonResponse<List<UserResponse>> response = CommonResponse.<List<UserResponse>>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("found all user")
                 .data(users.getContent())
@@ -103,7 +92,7 @@ public class UserController {
 
     @DeleteMapping(path = "/{id}")
     public ResponseEntity<CommonResponse<User>> deleteUser(@PathVariable String id) {
-        User user = userService.getById(id);
+        User user = userService.getOneById(id);
         userService.delete(id);
         CommonResponse<User> response = CommonResponse.<User>builder()
                 .statusCode(HttpStatus.OK.value())

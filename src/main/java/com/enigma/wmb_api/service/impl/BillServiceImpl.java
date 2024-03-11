@@ -42,24 +42,22 @@ public class BillServiceImpl implements BillService {
     public BillResponse create(NewBillRequest req) {
         Bill bill;
 
-        User user = userService.getById(req.getUserId());
+        User user = userService.getOneById(req.getUserId());
         TransType transType = transTypeService.getById(req.getTransType());
-        TableNum tableNum = tableNumService.getById(req.getTableId());
+        TableNum tableNum = null;
+        String tableNumId = null;
 
-        if (transType.getId().name().equals("TA")) {
-            bill = Bill.builder()
-                    .user(user)
-                    .transType(transType)
-                    .transDate(new Date())
-                    .build();
-        } else {
-            bill = Bill.builder()
-                    .user(user)
-                    .tableNum(tableNum)
-                    .transType(transType)
-                    .transDate(new Date())
-                    .build();
+        if (transType.getId().name().equals("EI")) {
+            tableNum = tableNumService.getById(req.getTableId());
+            tableNumId = tableNum.getId();
         }
+
+        bill = Bill.builder()
+                .user(user)
+                .tableNum(tableNum)
+                .transType(transType)
+                .transDate(new Date())
+                .build();
 
         billRepository.saveAndFlush(bill);
 
@@ -98,7 +96,7 @@ public class BillServiceImpl implements BillService {
                 .id(bill.getId())
                 .userId(bill.getUser().getId())
                 .transDate(bill.getTransDate())
-                .tableId(bill.getTableNum().getId())
+                .tableId(tableNumId)
                 .transType(bill.getTransType().getId())
                 .billDetails(billDetailResponses)
                 .paymentResponse(paymentResponse)
@@ -123,6 +121,10 @@ public class BillServiceImpl implements BillService {
         Page<Bill> bills =  billRepository.findAll(specification, pageable);
 
         return bills.map(bill -> {
+            String tableNumId = null;
+
+            if (bill.getTransType().equals("EI")) tableNumId = bill.getTableNum().getId();
+
             List<BillDetailResponse> billDetailResponses = bill.getBillDetails().stream().map(billDetail ->
                     BillDetailResponse.builder()
                             .id(billDetail.getId())
@@ -138,11 +140,19 @@ public class BillServiceImpl implements BillService {
 
             return BillResponse.builder()
                     .id(bill.getId())
+                    .transDate(bill.getTransDate())
                     .userId(bill.getUser().getId())
+                    .tableId(tableNumId)
+                    .transType(bill.getTransType().getId())
                     .billDetails(billDetailResponses)
                     .paymentResponse(paymentResponse)
                     .build();
         });
+    }
+
+    @Override
+    public List<Bill> getAllBill() {
+        return billRepository.findAll();
     }
 
     @Transactional(rollbackFor = Exception.class)

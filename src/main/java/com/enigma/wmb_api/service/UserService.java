@@ -9,8 +9,9 @@ import org.springframework.data.domain.Page;
 
 public interface UserService {
     User create(User user);
-    User getById(String id);
-    Page<User> getAll(SearchUserRequest request);
+    User getOneById(String id);
+    UserResponse getById(String id);
+    Page<UserResponse> getAll(SearchUserRequest request);
     UserResponse update(UpdateUserRequest request);
     void delete(String id);
 }

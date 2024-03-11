@@ -6,6 +6,7 @@ import com.enigma.wmb_api.dto.request.UpdateUserRequest;
 import com.enigma.wmb_api.dto.response.UserResponse;
 import com.enigma.wmb_api.entity.User;
 import com.enigma.wmb_api.repository.UserRepository;
+import com.enigma.wmb_api.service.UserCredentialService;
 import com.enigma.wmb_api.service.UserService;
 import com.enigma.wmb_api.specification.UserSpecification;
 import com.enigma.wmb_api.util.ValidationUtil;
@@ -27,6 +28,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ValidationUtil validationUtil;
+    private final UserCredentialService userCredentialService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -35,9 +37,8 @@ public class UserServiceImpl implements UserService {
         return userRepository.saveAndFlush(user);
     }
 
-    @Transactional(readOnly = true)
     @Override
-    public User getById(String id) {
+    public User getOneById(String id) {
         Optional<User> user = userRepository.findById(id);
         if(user.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found");
         return user.get();
@@ -45,18 +46,26 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<User> getAll(SearchUserRequest request) {
+    public UserResponse getById(String id) {
+        Optional<User> user = userRepository.findById(id);
+        if(user.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found");
+        return convertUserToUserResponse(user.get());
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<UserResponse> getAll(SearchUserRequest request) {
         if(request.getPage() <= 0) request.setPage(1);
         Sort sort = Sort.by(Sort.Direction.fromString(request.getDirection()), request.getSortBy());
         Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(), sort);
         Specification<User> specification = UserSpecification.getSpesification(request);
-        return userRepository.findAll(specification, pageable);
+        return userRepository.findAll(specification, pageable).map(this::convertUserToUserResponse);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public UserResponse update(UpdateUserRequest request) {
-        User currentUser = getById(request.getId());
+        User currentUser = getOneById(request.getId());
         currentUser.setName(request.getName());
         currentUser.setPhoneNumber(request.getPhoneNumber());
         userRepository.saveAndFlush(currentUser);
@@ -66,8 +75,10 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void delete(String id) {
-        User currUser = getById(id);
+        User currUser = getOneById(id);
         userRepository.delete(currUser);
+        userCredentialService.deleteById(currUser.getUserCredential().getId());
+
     }
 
     private UserResponse convertUserToUserResponse(User user) {

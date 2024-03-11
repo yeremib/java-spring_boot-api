@@ -9,8 +9,10 @@ import com.enigma.wmb_api.dto.response.CommonResponse;
 import com.enigma.wmb_api.dto.response.PagingResponse;
 import com.enigma.wmb_api.entity.Bill;
 import com.enigma.wmb_api.service.BillService;
+import com.enigma.wmb_api.util.CsvGeneratorUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,7 @@ import java.util.Map;
 @RequestMapping(path = APIUrl.BILL_API)
 public class BillController {
     private final BillService billService;
+    private final CsvGeneratorUtil csvGeneratorUtil;
 
 
     @PostMapping(
@@ -110,5 +113,18 @@ public class BillController {
                         .statusCode(HttpStatus.OK.value())
                         .message("successfully update transaction status")
                 .build());
+    }
+
+    @GetMapping(path = "/csv")
+    public ResponseEntity<byte[]> generateCsvFile() {
+        List<Bill> bills = billService.getAllBill();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "bills.csv");
+        byte[] csvBytes =  csvGeneratorUtil.generateCsv(bills).getBytes();
+
+        return new ResponseEntity<>(csvBytes, headers, HttpStatus.OK);
+
     }
 }

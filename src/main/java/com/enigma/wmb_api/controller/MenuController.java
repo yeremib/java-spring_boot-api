@@ -37,8 +37,8 @@ public class MenuController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<CommonResponse<MenuResponse>> createNewMenu(
-            @RequestPart (name = "product") String jsonProduct,
-            @RequestParam (name = "image") MultipartFile image
+            @RequestPart (name = "menu") String jsonProduct,
+            @RequestParam (name = "image", required = false) MultipartFile image
     ) {
         CommonResponse.CommonResponseBuilder<MenuResponse> responseBuilder = CommonResponse.builder();
 
@@ -52,6 +52,7 @@ public class MenuController {
             responseBuilder.data(menuResponse);
             return ResponseEntity.status(HttpStatus.CREATED).body(responseBuilder.build());
         } catch (Exception e) {
+            e.printStackTrace();
             responseBuilder.statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
             responseBuilder.message("internal server error");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBuilder.build());
@@ -116,7 +117,7 @@ public class MenuController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<CommonResponse<MenuResponse>> updateMenu(
-            @RequestParam (name = "product") String jsonProduct,
+            @RequestParam (name = "menu") String jsonProduct,
             @RequestParam (name = "image", required = false) MultipartFile image
     ) throws JsonProcessingException {
         CommonResponse.CommonResponseBuilder<MenuResponse> responseBuilder = CommonResponse.builder();
