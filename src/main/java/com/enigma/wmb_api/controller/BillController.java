@@ -9,7 +9,9 @@ import com.enigma.wmb_api.dto.response.CommonResponse;
 import com.enigma.wmb_api.dto.response.PagingResponse;
 import com.enigma.wmb_api.entity.Bill;
 import com.enigma.wmb_api.service.BillService;
+import com.enigma.wmb_api.util.BillPdfExporter;
 import com.enigma.wmb_api.util.CsvGeneratorUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +21,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -125,6 +131,23 @@ public class BillController {
         byte[] csvBytes =  csvGeneratorUtil.generateCsv(bills).getBytes();
 
         return new ResponseEntity<>(csvBytes, headers, HttpStatus.OK);
+    }
 
+    @GetMapping(path = "/pdf")
+    public void exportToPdf(HttpServletResponse response) throws IOException {
+        response.setContentType("application/pdf");
+
+        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        String currentDateTime = dateFormatter.format(new Date());
+
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename=bills_" + currentDateTime + ".pdf";
+
+        response.setHeader(headerKey, headerValue);
+
+        List<Bill> listBill = billService.getAllBill();
+
+        BillPdfExporter exporter = new BillPdfExporter(listBill);
+        exporter.export(response);
     }
 }
