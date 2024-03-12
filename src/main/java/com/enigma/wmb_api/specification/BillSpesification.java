@@ -5,6 +5,8 @@ import com.enigma.wmb_api.dto.request.SearchBillReq;
 import com.enigma.wmb_api.entity.Bill;
 import com.enigma.wmb_api.entity.TransType;
 import com.enigma.wmb_api.util.DateUtil;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -19,7 +21,7 @@ public class BillSpesification {
 
             if (request.getTransType() != null) {
                 TransactionType transactionType = TransactionType.valueOf(request.getTransType());
-                Predicate transTypePredicate = criteriaBuilder.equal(root.get("transType"), transactionType);
+                Predicate transTypePredicate = criteriaBuilder.equal(root.get("transType").get("id"), transactionType);
                 predicates.add(transTypePredicate);
             }
 
