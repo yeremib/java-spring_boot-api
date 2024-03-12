@@ -13,5 +13,4 @@ public interface UserService {
     UserResponse getById(String id);
     Page<UserResponse> getAll(SearchUserRequest request);
     UserResponse update(UpdateUserRequest request);
-    void delete(String id);
 }

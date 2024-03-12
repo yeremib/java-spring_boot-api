@@ -1,6 +1,5 @@
 package com.enigma.wmb_api.service.impl;
 
-import com.enigma.wmb_api.dto.request.NewUserRequest;
 import com.enigma.wmb_api.dto.request.SearchUserRequest;
 import com.enigma.wmb_api.dto.request.UpdateUserRequest;
 import com.enigma.wmb_api.dto.response.UserResponse;
@@ -70,15 +69,6 @@ public class UserServiceImpl implements UserService {
         currentUser.setPhoneNumber(request.getPhoneNumber());
         userRepository.saveAndFlush(currentUser);
         return convertUserToUserResponse(currentUser);
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public void delete(String id) {
-        User currUser = getOneById(id);
-        userRepository.delete(currUser);
-        userCredentialService.deleteById(currUser.getUserCredential().getId());
-
     }
 
     private UserResponse convertUserToUserResponse(User user) {

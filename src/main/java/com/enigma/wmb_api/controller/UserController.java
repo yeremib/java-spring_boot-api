@@ -61,7 +61,7 @@ public class UserController {
         PagingResponse pagingResponse = PagingResponse.builder()
                 .totalPages(users.getTotalPages())
                 .totalElement(users.getTotalElements())
-                .page(users.getPageable().getPageNumber())
+                .page(users.getPageable().getPageNumber() + 1)
                 .size(users.getPageable().getPageSize())
                 .hasNext(users.hasNext())
                 .hasPrevious(users.hasPrevious())
@@ -87,18 +87,5 @@ public class UserController {
                 .data(user1)
                 .build();
         return ResponseEntity.ok(response);
-    }
-
-
-    @DeleteMapping(path = "/{id}")
-    public ResponseEntity<CommonResponse<User>> deleteUser(@PathVariable String id) {
-        User user = userService.getOneById(id);
-        userService.delete(id);
-        CommonResponse<User> response = CommonResponse.<User>builder()
-                .statusCode(HttpStatus.OK.value())
-                .message("user deleted")
-                .data(user)
-                .build();
-        return  ResponseEntity.ok(response);
     }
 }

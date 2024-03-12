@@ -39,7 +39,6 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public MenuResponse create(NewMenuRequest request) {
         validationUtil.validate(request);
-        //if (request.getImage().isEmpty()) throw new ConstraintViolationException("image is required", null);
 
         Menu menu = Menu.builder()
                 .name(request.getName())
@@ -99,12 +98,6 @@ public class MenuServiceImpl implements MenuService {
         return convertMenuToMenuResponse(currentMenu);
     }
 
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public Menu update(Menu menu) {
-        getById(menu.getId());
-        return menuRepository.saveAndFlush(menu);
-    }
 
     @Transactional(rollbackFor = Exception.class)
     @Override

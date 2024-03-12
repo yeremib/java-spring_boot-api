@@ -14,6 +14,5 @@ public interface MenuService {
     Menu getById(String id);
     Page<MenuResponse> getAll(SearchMenuRequest request);
     MenuResponse updateMenu(UpdateMenuRequest request);
-    Menu update(Menu menu);
     void delete(String id);
 }

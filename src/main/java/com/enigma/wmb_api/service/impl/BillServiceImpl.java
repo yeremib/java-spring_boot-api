@@ -40,8 +40,6 @@ public class BillServiceImpl implements BillService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public BillResponse create(NewBillRequest req) {
-        Bill bill;
-
         User user = userService.getOneById(req.getUserId());
         TransType transType = transTypeService.getById(req.getTransType());
         TableNum tableNum = null;
@@ -52,7 +50,7 @@ public class BillServiceImpl implements BillService {
             tableNumId = tableNum.getId();
         }
 
-        bill = Bill.builder()
+        Bill bill = Bill.builder()
                 .user(user)
                 .tableNum(tableNum)
                 .transType(transType)
