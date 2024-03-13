@@ -108,6 +108,7 @@ public class BillController {
         return ResponseEntity.ok(response);
     }
 
+
     @PostMapping("/status")
     public ResponseEntity<CommonResponse<?>> updateStatus(@RequestBody Map<String, Object> request) {
         UpdateTransactionStatusRequest updateTransactionStatusRequest = UpdateTransactionStatusRequest.builder()
@@ -121,6 +122,7 @@ public class BillController {
                 .build());
     }
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @GetMapping(path = "/csv")
     public ResponseEntity<byte[]> generateCsvFile() {
         List<Bill> bills = billService.getAllBill();
@@ -133,6 +135,7 @@ public class BillController {
         return new ResponseEntity<>(csvBytes, headers, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @GetMapping(path = "/pdf")
     public void exportToPdf(HttpServletResponse response) throws IOException {
         response.setContentType("application/pdf");
